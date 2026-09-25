@@ -1,84 +1,128 @@
 from __future__ import annotations
 
-import random
 from pathlib import Path
+from datetime import timedelta
+
 import pandas as pd
 
-from core import utils 
+from core import utils
+
+
+def _rebuild_text_for_embedding(df: pd.DataFrame) -> pd.DataFrame:
+    """Rebuild the embedding text + summary_chars from the (possibly corrupted) columns."""
+    df["summary"] = df["summary"].fillna("").astype(str)
+    df["title"] = df["title"].fillna("").astype(str)
+    df["authors_joined"] = df["authors_joined"].fillna("").astype(str)
+    df["categories_joined"] = df["categories_joined"].fillna("").astype(str)
+    df["published"] = df["published"].fillna("").astype(str)
+
+    df["summary_chars"] = df["summary"].str.len()
+    df["text_for_embedding"] = (
+        "Title: " + df["title"] + "\n"
+        + "Authors: " + df["authors_joined"] + "\n"
+        + "Published: " + df["published"] + "\n"
+        + "Categories: " + df["categories_joined"] + "\n"
+        + "Summary: " + df["summary"]
+    )
+    return df
 
 
 def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path | str) -> pd.DataFrame:
-    """Simulate nhiều dạng data corruption trên DataFrame.
+    """Simulate 6 real-world data corruption patterns on a clean DataFrame.
 
-    Pseudo-code:
-    1. Drop mot so latest records.
-    2. Blank summary o mot so dong.
-    3. Inject noise vao text.
-    4. Lam title bi truncate.
-    5. Lam published date cu di.
-    6. Add duplicate rows.
-    7. Rebuild `text_for_embedding`.
-    8. Ghi corruption log vao output_log_path.
+    Corruption types (matches the lab spec):
+      1. drop_latest_records  - drop ~10% of the newest papers (by age_days)
+      2. blank_summary        - blank summary on ~10% of rows
+      3. inject_noise         - append garbage tokens to summary on ~10% of rows
+      4. truncate_title       - cut title to 15 chars on ~10% of rows
+      5. stale_date           - push published date back 5 years on ~10% of rows
+      6. duplicate_rows       - duplicate up to 3 rows
+
+    The function always rebuilds `text_for_embedding` and `summary_chars` so the
+    corrupted DataFrame stays schema-compatible with the clean one.
     """
-    # Tạo bản sao để không làm ảnh hưởng đến DataFrame gốc
-    df_corrupted = df.copy()
-    log = []
-    
-    # 1. Drop một số latest records (Dựa vào age_days, số càng nhỏ càng mới)
-    if "age_days" in df_corrupted.columns:
-        # Sắp xếp để đưa các bài mới nhất lên đầu
-        df_corrupted = df_corrupted.sort_values(by="age_days")
-        drop_count = max(1, int(len(df_corrupted) * 0.1)) # Xóa 10% dữ liệu mới nhất
-        dropped_ids = df_corrupted.iloc[:drop_count]["paper_id"].tolist()
-        
-        df_corrupted = df_corrupted.iloc[drop_count:]
-        log.append({"action": "drop_latest_records", "count": drop_count, "dropped_ids": dropped_ids})
+    corrupted = df.copy(deep=True)
+    log: list[dict[str, object]] = []
 
-    # 2. Blank summary ở một số dòng (10% số dòng ngẫu nhiên)
-    blank_idx = df_corrupted.sample(frac=0.1, random_state=42).index
-    df_corrupted.loc[blank_idx, "summary"] = ""
-    log.append({"action": "blank_summary", "affected_ids": df_corrupted.loc[blank_idx, "paper_id"].tolist()})
+    if corrupted.empty:
+        utils.write_json(Path(output_log_path), log)
+        return corrupted
 
-    # 3. Inject noise vào text (Thêm chuỗi rác vào tóm tắt)
-    noise_idx = df_corrupted.sample(frac=0.1, random_state=43).index
-    df_corrupted.loc[noise_idx, "summary"] = df_corrupted.loc[noise_idx, "summary"].astype(str) + " [CORRUPTED_NOISE_!@#123]"
-    log.append({"action": "inject_noise", "affected_ids": df_corrupted.loc[noise_idx, "paper_id"].tolist()})
+    # 1. Drop the newest ~10% of records (smallest age_days = most recent)
+    if "age_days" in corrupted.columns:
+        corrupted = corrupted.sort_values(by="age_days").reset_index(drop=True)
+        drop_count = max(1, int(len(corrupted) * 0.1))
+        dropped_ids = corrupted.iloc[:drop_count]["paper_id"].tolist()
+        corrupted = corrupted.iloc[drop_count:].reset_index(drop=True)
+        log.append({
+            "type": "drop_latest_records",
+            "rows": drop_count,
+            "paper_ids": dropped_ids,
+        })
 
-    # 4. Làm title bị truncate (Cắt tiêu đề còn 15 ký tự)
-    trunc_idx = df_corrupted.sample(frac=0.1, random_state=44).index
-    df_corrupted.loc[trunc_idx, "title"] = df_corrupted.loc[trunc_idx, "title"].apply(lambda x: str(x)[:15] + "...")
-    log.append({"action": "truncate_title", "affected_ids": df_corrupted.loc[trunc_idx, "paper_id"].tolist()})
+    if corrupted.empty:
+        utils.write_json(Path(output_log_path), log)
+        return corrupted
 
-    # 5. Làm published date cũ đi (Trừ đi 5 năm)
-    old_date_idx = df_corrupted.sample(frac=0.1, random_state=45).index
-    temp_dates = pd.to_datetime(df_corrupted.loc[old_date_idx, "published"], errors="coerce")
-    # Trừ đi 5 năm (DateOffset) và format lại thành chuỗi YYYY-MM-DD
-    df_corrupted.loc[old_date_idx, "published"] = (temp_dates - pd.DateOffset(years=5)).dt.strftime("%Y-%m-%d")
-    if "age_days" in df_corrupted.columns:
-        df_corrupted.loc[old_date_idx, "age_days"] += (5 * 365) # Cập nhật tuổi đời tương ứng
-    log.append({"action": "age_published_date", "affected_ids": df_corrupted.loc[old_date_idx, "paper_id"].tolist()})
+    # 2. Blank summary on ~10% of rows
+    blank_idx = corrupted.sample(frac=0.1, random_state=42).index
+    corrupted.loc[blank_idx, "summary"] = ""
+    log.append({
+        "type": "blank_summary",
+        "rows": len(blank_idx),
+        "paper_ids": corrupted.loc[blank_idx, "paper_id"].tolist(),
+    })
 
-    # 6. Add duplicate rows (Lấy 3 dòng ngẫu nhiên và dán xuống cuối)
-    dup_rows = df_corrupted.sample(n=min(3, len(df_corrupted)), random_state=46)
-    df_corrupted = pd.concat([df_corrupted, dup_rows], ignore_index=True)
-    log.append({"action": "add_duplicates", "count": len(dup_rows), "duplicated_ids": dup_rows["paper_id"].tolist()})
-
-    # 7. Rebuild `text_for_embedding`
-    # Ghép nối lại các trường thông tin sau khi chúng đã bị làm hỏng
-    df_corrupted["text_for_embedding"] = (
-        "Title: " + df_corrupted["title"].fillna("") + "\n" +
-        "Authors: " + df_corrupted["authors_joined"].fillna("") + "\n" +
-        "Published: " + df_corrupted["published"].astype(str).fillna("") + "\n" +
-        "Categories: " + df_corrupted["categories_joined"].fillna("") + "\n" +
-        "Summary: " + df_corrupted["summary"].fillna("")
+    # 3. Inject noise into summary on ~10% of rows
+    noise_idx = corrupted.sample(frac=0.1, random_state=43).index
+    corrupted.loc[noise_idx, "summary"] = (
+        corrupted.loc[noise_idx, "summary"].astype(str) + " [CORRUPTED_NOISE_!@#123]"
     )
-    
-    # Cập nhật lại độ dài summary nếu có
-    if "summary_chars" in df_corrupted.columns:
-        df_corrupted["summary_chars"] = df_corrupted["summary"].fillna("").str.len()
+    log.append({
+        "type": "inject_noise",
+        "rows": len(noise_idx),
+        "paper_ids": corrupted.loc[noise_idx, "paper_id"].tolist(),
+    })
 
-    # 8. Ghi corruption log vào output_log_path
-    # Sử dụng hàm utils.write_json để lưu trữ log dạng JSON một cách an toàn
+    # 4. Truncate title to 15 chars on ~10% of rows
+    trunc_idx = corrupted.sample(frac=0.1, random_state=44).index
+    corrupted.loc[trunc_idx, "title"] = (
+        corrupted.loc[trunc_idx, "title"].astype(str).apply(lambda x: x[:15] + "...")
+    )
+    log.append({
+        "type": "truncate_title",
+        "rows": len(trunc_idx),
+        "paper_ids": corrupted.loc[trunc_idx, "paper_id"].tolist(),
+    })
+
+    # 5. Push published date back 5 years on ~10% of rows
+    old_date_idx = corrupted.sample(frac=0.1, random_state=45).index
+    parsed = pd.to_datetime(corrupted.loc[old_date_idx, "published"], errors="coerce")
+    corrupted.loc[old_date_idx, "published"] = (
+        parsed - pd.DateOffset(years=5)
+    ).dt.strftime("%Y-%m-%d")
+    if "age_days" in corrupted.columns:
+        corrupted.loc[old_date_idx, "age_days"] = (
+            corrupted.loc[old_date_idx, "age_days"] + 5 * 365
+        )
+    log.append({
+        "type": "stale_date",
+        "rows": len(old_date_idx),
+        "paper_ids": corrupted.loc[old_date_idx, "paper_id"].tolist(),
+    })
+
+    # 6. Duplicate up to 3 rows
+    dup_count = min(3, len(corrupted))
+    dup_rows = corrupted.sample(n=dup_count, random_state=46)
+    corrupted = pd.concat([corrupted, dup_rows], ignore_index=True)
+    log.append({
+        "type": "duplicate_rows",
+        "rows": dup_count,
+        "paper_ids": dup_rows["paper_id"].tolist(),
+    })
+
+    # Rebuild derived columns so the corrupted frame stays schema-compatible
+    corrupted = _rebuild_text_for_embedding(corrupted)
+
     utils.write_json(Path(output_log_path), log)
-
-    return df_corrupted
+    return corrupted
