@@ -4,21 +4,21 @@
 
 ## 1. Thông tin bài nộp
 
-| Thông tin       | Nội dung               |
-| --------------- | ---------------------- |
-| Khóa/Lớp        | K4                     |
-| Tên nhóm        | [Tên hoặc mã nhóm]     |
-| Repository      | [Đường dẫn repository] |
-| Ngày hoàn thành | [YYYY-MM-DD]           |
+| Thông tin         | Nội dung                  |
+| ------------------ | -------------------------- |
+| Khóa/Lớp         | K4                         |
+| Tên nhóm         | [Tên hoặc mã nhóm]     |
+| Repository         | [Đường dẫn repository] |
+| Ngày hoàn thành | [YYYY-MM-DD]               |
 
 ### Thành viên và phân công
 
-| STT | Họ và tên   | MSSV        | Vai trò chính              | Module/deliverable sở hữu                                   |
-| --: | ----------- | ----------- | -------------------------- | ----------------------------------------------------------- |
-|   1 | [Họ tên]    | [MSSV]      | Pipeline Lead & Integrator | `src/core/`, `src/pipelines/`, `script/`, tích hợp cuối     |
-|   2 | Lê Đức Tùng | 2A202603005 | Data Foundation & Recovery | `src/ingestion/crossref.py`, `cleaning.py`, `corruption.py` |
-|   3 | [Họ tên]    | [MSSV]      | RAG & Vector Specialist    | `src/retrieval/`, ChromaDB, LLM providers                   |
-|   4 | [Họ tên]    | [MSSV]      | Observability & Evaluation | `src/observability/`, `src/evaluation/`, metrics/reports    |
+| STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
+| --: | --- | --- | --- | --- |
+| 1 | [Họ tên] | [MSSV] | Pipeline Lead & Integrator | `src/core/`, `src/pipelines/`, `script/`, tích hợp cuối |
+| 2 | Lê Đức Tùng | 2A202603005 | Data Foundation & Recovery | `src/ingestion/crossref.py`, `cleaning.py`, `corruption.py` |
+| 3 | [Họ tên] | [MSSV] | RAG & Vector Specialist | `src/retrieval/`, ChromaDB, LLM providers |
+| 4 | [Họ tên] | [MSSV] | Observability & Evaluation | `src/observability/`, `src/evaluation/`, metrics/reports |
 
 ## 2. Tóm tắt kết quả
 
@@ -55,29 +55,29 @@ Crossref API
 
 ### Trách nhiệm của từng khối
 
-| Khối              | Input                                                             | Xử lý chính                                                                                                                                                                                                                                                                         | Output/artifact                                                                                     | Owner       |
-| ----------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------- |
-| Ingestion         | Crossref REST API hoặc snapshot `data/raw/crossref_response.json` | Fetch, retry 429/5xx, fallback offline, parse, bỏ thẻ JATS                                                                                                                                                                                                                          | `data/raw/crossref_records.json`                                                                    | Lê Đức Tùng |
-| Cleaning          | `crossref_records.json`                                           | Chuẩn hóa text, `age_days`, dedupe `paper_id`, `text_for_embedding`                                                                                                                                                                                                                 | `data/clean/papers_clean.{csv,json}`                                                                | Lê Đức Tùng |
-| Embedding/index   | `text_for_embedding`                                              | MiniLM-L6-v2, ChromaDB cosine, 3 collection tách biệt                                                                                                                                                                                                                               | `data/chroma/`, `data/embeddings/`                                                                  | [Người 3]   |
-| Evaluation        | clean dataframe                                                   | Test set 10 câu, Hit Rate, Token F1, LLM Judge                                                                                                                                                                                                                                      | `data/eval/test_set.json`, `data/results/*_metrics.json`                                            | [Người 4]   |
-| Observability     | clean/corrupted/repaired dataframe                                | Great Expectations 1.x (4 expectations) + Freshness SLA                                                                                                                                                                                                                             | `data/quality/*.json`                                                                               | [Người 4]   |
-| Corruption/repair | clean dataframe, raw records                                      | 6 kịch bản lỗi; repair dựng lại từ raw                                                                                                                                                                                                                                              | `data/results/corruption_log.json`, `data/clean/*_corrupted.*`, `*_repaired.*`                      | Lê Đức Tùng |
-| Orchestration     | `data/raw/crossref_records.json`, `data/eval/test_set.json`       | `phase1.py`: raw → clean → Quality Gate (chặn trước khi index) → test set cố định → index `papers-baseline` → evaluate → report. `corruption_flow.py`: corrupt → gate → index/evaluate `papers-corrupted` → repair từ raw → index/evaluate `papers-repaired` → so sánh 3 trạng thái | `data/results/*_metrics.json`, `data/reports/phase1_report.md`, `data/reports/corruption_report.md` | Người 1     |
+| Khối             | Input          | Xử lý chính             | Output/artifact          | Owner          |
+| ----------------- | -------------- | -------------------------- | ------------------------ | -------------- |
+| Ingestion         | Crossref REST API hoặc snapshot `data/raw/crossref_response.json` | Fetch, retry 429/5xx, fallback offline, parse, bỏ thẻ JATS | `data/raw/crossref_records.json` | Lê Đức Tùng |
+| Cleaning          | `crossref_records.json` | Chuẩn hóa text, `age_days`, dedupe `paper_id`, `text_for_embedding` | `data/clean/papers_clean.{csv,json}` | Lê Đức Tùng |
+| Embedding/index   | `text_for_embedding` | MiniLM-L6-v2, ChromaDB cosine, 3 collection tách biệt | `data/chroma/`, `data/embeddings/` | [Người 3] |
+| Evaluation        | clean dataframe | Test set 10 câu, Hit Rate, Token F1, LLM Judge | `data/eval/test_set.json`, `data/results/*_metrics.json` | [Người 4] |
+| Observability     | clean/corrupted/repaired dataframe | Great Expectations 1.x (4 expectations) + Freshness SLA | `data/quality/*.json` | [Người 4] |
+| Corruption/repair | clean dataframe, raw records | 6 kịch bản lỗi; repair dựng lại từ raw | `data/results/corruption_log.json`, `data/clean/*_corrupted.*`, `*_repaired.*` | Lê Đức Tùng |
+| Orchestration     | `data/raw/crossref_records.json`, `data/eval/test_set.json` | `phase1.py`: raw → clean → Quality Gate (chặn trước khi index) → test set cố định → index `papers-baseline` → evaluate → report. `corruption_flow.py`: corrupt → gate → index/evaluate `papers-corrupted` → repair từ raw → index/evaluate `papers-repaired` → so sánh 3 trạng thái | `data/results/*_metrics.json`, `data/reports/phase1_report.md`, `data/reports/corruption_report.md` | Người 1 |
 
 ## 4. Cách tái hiện kết quả
 
 ### Cấu hình không chứa secret
 
-| Biến/cấu hình             | Giá trị sử dụng                            |
-| ------------------------- | ------------------------------------------ |
-| `LLM_PROVIDER`            | `gemini`                                   |
-| `LLM_MODEL`               | `gemini-2.5-flash`                         |
-| Embedding model           | `sentence-transformers/all-MiniLM-L6-v2`   |
-| Số lượng Crossref records | 24 (`max_results`)                         |
-| Retrieval`top_k`          | 4                                          |
-| Freshness threshold       | 180 ngày (cảnh báo khi tỷ lệ bài cũ > 25%) |
-| Random seed, nếu có       | [Giá trị]                                  |
+| Biến/cấu hình             | Giá trị sử dụng |
+| ---------------------------- | ------------------- |
+| `LLM_PROVIDER`             | `gemini`            |
+| `LLM_MODEL`                | `gemini-2.5-flash`  |
+| Embedding model              | `sentence-transformers/all-MiniLM-L6-v2` |
+| Số lượng Crossref records | 24 (`max_results`) |
+| Retrieval`top_k`           | 4                   |
+| Freshness threshold          | 180 ngày (cảnh báo khi tỷ lệ bài cũ > 25%) |
+| Random seed, nếu có        | [Giá trị]         |
 
 Không dán nội dung API key hoặc file `.env` vào báo cáo.
 
