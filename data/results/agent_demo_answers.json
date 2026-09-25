@@ -1,10 +1,26 @@
 [
   {
-    "question": "What is the summary of 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'?",
-    "error": "Agent failed: Error calling model 'gemini-2.5-flash' (NOT_FOUND): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}"
+    "question": "What is the summary of the paper 'Continuous Benchmark Evaluation for Enterprise Retrieval Pipelines'?",
+    "answer": [
+      {
+        "type": "text",
+        "text": "The paper **\"Continuous Benchmark Evaluation for Enterprise Retrieval Pipelines\"** by Quang Le and Yen Vu addresses the limitation of static benchmarks in failing to capture domain drift within enterprise knowledge bases. \n\n**Summary:**\nThe authors establish a synthetic test generator that automatically creates paired evaluation sets whenever new corpora are ingested into the system. This enables continuous and dynamic evaluation of enterprise retrieval pipelines to keep pace with evolving domain knowledge.",
+        "extras": {
+          "signature": "El4KXAFpFH0TaireYKTEoCOLL5XoVBI03vl5RwknCmaaD6KSMdD0xEE7AGdO6Spal7W203hPYLjaxmAwDYKgUDnnirl8aYLicgLay1vaUc5fDEPsXYBNYOXoCqlAF2gL"
+        }
+      }
+    ]
   },
   {
-    "question": "Who authored '0346 Retrieval Augmented Generation Improves Large Language Model Performance in Sleep Medicine'?",
-    "error": "Agent failed: Error calling model 'gemini-2.5-flash' (NOT_FOUND): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}"
+    "question": "What is the summary of the paper 'Multi-Agent Consensus for High-Stakes Fact Verification'?",
+    "answer": [
+      {
+        "type": "text",
+        "text": "Based on the paper **\"Multi-Agent Consensus for High-Stakes Fact Verification\"**, here is a summary:\n\n* **The Problem:** Single Large Language Models (LLMs) are often susceptible to confirmation bias when evaluating retrieved evidence for fact-checking and verification tasks.\n* **The Proposed Solution:** The paper introduces a multi-agent debate architecture designed for high-stakes fact verification. \n* **How It Works:** In this architecture, specialized verifier agents independently critique and corroborate citations, reducing individual bias and improving reliability through consensus-building.",
+        "extras": {
+          "signature": "El4KXAFpFH0TIoZoczmM29jBmUQVmICLADlOCh8s76RDAgZg9wc58eECWlAKRkGLhNVogSUUiDxRCRDDD4R7dI3rx//QRrDR9JxPXWs8jyvt9RQcrg36qIhcHuHk3eFh"
+        }
+      }
+    ]
   }
 ]

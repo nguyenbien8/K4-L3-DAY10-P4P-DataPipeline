@@ -103,7 +103,7 @@ python script/run_corruption_flow.py
 - **Lệnh hoặc bước tái hiện:** `python script/run_phase1.py` với `LLM_MODEL=gemini-2.5-flash`.
 - **Nguyên nhân gốc:** Model mặc định của repo đã bị gỡ; `metrics.py` bắt mọi exception và âm thầm dùng heuristic, nên `judge_accuracy` thực chất chỉ là Token F1 đổi thang.
 - **Cách xử lý:** Liệt kê model khả dụng qua API, đổi sang `gemini-flash-lite-latest` (bản `gemini-flash-latest` hết hạn mức ngày của free tier) (`.env`, `.env.example`, `config.py`); thêm retry backoff 4 lần cho lỗi 503 và trường `judge_fallback_count` để lỗi không còn bị che.
-- **Cách xác minh sau khi sửa:** `judge_fallback_count` = 1 / 0 / 0 cho 3 trạng thái.
+- **Cách xác minh sau khi sửa:** `judge_fallback_count` = 0 / 0 / 0 cho 3 trạng thái: toàn bộ 30 lượt chấm do LLM thật.
 - **Điều học được:** Fallback im lặng chính là một dạng Silent Failure ngay trong bộ đo; mọi fallback phải được đếm và báo cáo.
 
 ## 7. Hiểu biết về luồng end-to-end

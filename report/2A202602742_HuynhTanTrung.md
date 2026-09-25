@@ -9,9 +9,9 @@
 | Họ và tên       | Huỳnh Tấn Trung                                       |
 | MSSV            | 2A202602742                                           |
 | Khóa/Lớp        | K4                                                    |
-| Tên nhóm        | K4-L3-DAY10-P4P                                       |
+| Tên nhóm        | P4P                                                   |
 | Vai trò chính   | RAG & Vector Specialist                               |
-| Repository      | https://github.com/nguyenbien8/K4-L3-P4P-DataPipeline |
+| Repository      | https://github.com/nguyenbien8/K4-L3-DAY10-P4P-DataPipeline |
 | Ngày hoàn thành | 2026-09-25                                            |
 
 ## 2. Vai trò và phạm vi công việc
@@ -40,7 +40,7 @@ Chỉ nhận ownership cho phần bạn trực tiếp thực hiện. Liên hệ 
 
 Nêu một output cụ thể mà phần việc của bạn tạo ra hoặc giúp xác minh:
 
-`papers-baseline` chứa 24 documents; retrieval hit rate đạt `1.000`, giảm còn `0.900` trên corrupted và phục hồi về `1.000` trên repaired.
+`papers-baseline` chứa 24 documents; retrieval hit rate đạt `1.000`, giảm còn `0.500` trên corrupted và phục hồi về `1.000` trên repaired.
 
 ## 4. Giải thích phần kỹ thuật đã thực hiện
 
@@ -70,7 +70,7 @@ python script/run_corruption_flow.py
 ```
 
 - **Kết quả mong đợi:** Tạo index 24 documents và đánh giá được ba trạng thái.
-- **Kết quả thực tế:** Baseline và repaired hit rate `1.000`; corrupted hit rate `0.900`.
+- **Kết quả thực tế:** Baseline và repaired hit rate `1.000`; corrupted hit rate `0.500`.
 - **Artifact/log:** `data/chroma/`, `data/embeddings/`, `data/results/*_metrics.json`, `data/reports/*.md`.
 
 ## 5. Một quyết định kỹ thuật quan trọng
@@ -112,7 +112,7 @@ Giải thích ngắn gọn bằng lời của bạn:
 2. Mỗi câu hỏi có `ground_truth_doc_ids`; retrieval hit rate kiểm tra document đúng có nằm trong kết quả, còn answer metrics so sánh câu trả lời với ground truth.
 3. Quality checks kiểm tra schema, null, uniqueness và độ dài summary; freshness theo dõi tuổi dữ liệu qua `age_days` và tỷ lệ bài cũ.
 4. Dùng cùng test set để mọi thay đổi metric phản ánh chất lượng dữ liệu/index, không phải do đề khác nhau.
-5. Repair thành công khi quality gate pass, artifacts repaired được tạo từ raw và metric phục hồi; ở đây hit rate phục hồi từ `0.900` lên `1.000`.
+5. Repair thành công khi quality gate pass, artifacts repaired được tạo từ raw và metric phục hồi; ở đây hit rate phục hồi từ `0.500` lên `1.000`.
 
 ## 8. Phân tích kết quả
 
@@ -120,27 +120,27 @@ Giải thích ngắn gọn bằng lời của bạn:
 
 | Metric/signal        | Baseline | Corrupted | Repaired | Nhận xét của cá nhân                                   |
 | -------------------- | -------: | --------: | -------: | ------------------------------------------------------ |
-| `retrieval_hit_rate` |    1.000 |     0.900 |    1.000 | Corruption làm mất một hit; repair phục hồi hoàn toàn. |
-| `mean_token_f1`      |    0.612 |     0.587 |    0.612 | Chất lượng answer giảm nhẹ rồi phục hồi.               |
-| `judge_accuracy`     |    0.600 |     0.600 |    0.600 | Không thay đổi trong lần đánh giá này.                 |
-| `mean_judge_score`   |    3.200 |     3.200 |    3.200 | Không thay đổi trong lần đánh giá này.                 |
-| Quality checks       |     True |     False |     True | Corrupted fail uniqueness và summary length.           |
-| Freshness status     |     True |      True |     True | Stale ratio đều không vượt ngưỡng 25%.                 |
+| `retrieval_hit_rate` |    1.000 |     0.500 |    1.000 | Drop latest xóa tài liệu đúng của 5/10 câu; repair phục hồi hoàn toàn. |
+| `mean_token_f1`      |    1.000 |     0.672 |    1.000 | Câu trả lời sai khi tài liệu đúng bị xóa hoặc ngày bị lùi. |
+| `judge_accuracy`     |    1.000 |     0.700 |    1.000 | LLM Judge (Gemini) đánh giá 3/10 câu sai trên corrupted. |
+| `mean_judge_score`   |    5.000 |     3.600 |    5.000 | Giảm 1.4 điểm rồi phục hồi. |
+| Quality checks       |     PASS |      FAIL |     PASS | Corrupted fail uniqueness và summary length.           |
+| Freshness status     |    FRESH |     STALE |    FRESH | Stale date đẩy tỷ lệ bài cũ lên 0.318 > 25%. |
 
 ### Kết luận từ số liệu
 
 Hoàn thành hai chuỗi nguyên nhân–bằng chứng sau:
 
-1. Duplicate/blank-summary/drop-latest corruption → quality gate từ `True` thành `False` trong khi freshness vẫn `True` → hit rate giảm từ `1.000` xuống `0.900`, token F1 giảm từ `0.612` xuống `0.587`.
+1. Duplicate/blank-summary/drop-latest/stale-date corruption → quality gate từ `True` thành `False` và freshness từ `FRESH` thành `STALE` (0.318 > 0.25) → hit rate giảm từ `1.000` xuống `0.500`, token F1 giảm từ `1.000` xuống `0.672`.
 2. Rebuild từ raw records → quality gate repaired thành `True` → hit rate và token F1 phục hồi về baseline.
 
 Corruption nào ảnh hưởng rõ nhất và vì sao?
 
-Drop latest và các thay đổi làm mất hoặc làm yếu nội dung ảnh hưởng rõ nhất đến retrieval; bằng chứng là hit rate giảm 10% và quality gate phát hiện duplicate/summary ngắn.
+Drop latest và các thay đổi làm mất hoặc làm yếu nội dung ảnh hưởng rõ nhất đến retrieval; bằng chứng là hit rate giảm 50% (5/10 câu mất tài liệu đúng) và quality gate phát hiện duplicate/summary ngắn.
 
 Kết quả nào khác với kỳ vọng ban đầu?
 
-Freshness vẫn `True` sau corruption vì stale-date chỉ tác động một phần nhỏ dữ liệu, dưới ngưỡng 25%. Đã kiểm tra trực tiếp `freshness_report.json` và quality report của corrupted.
+Truncate title và inject noise không làm đổi metric nào vì các dòng bị ảnh hưởng không trùng tài liệu trong test set, và cũng không bị Quality Gate phát hiện. Đã kiểm tra trực tiếp `freshness_report.json` và quality report của corrupted.
 
 ## 9. Điều học được và hướng cải thiện
 

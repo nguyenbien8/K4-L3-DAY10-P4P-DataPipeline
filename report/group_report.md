@@ -94,8 +94,8 @@ python script/run_corruption_flow.py
 
 | Lệnh             | Trạng thái | Thời điểm chạy gần nhất | Bằng chứng |
 | ----------------- | ---------- | ----------------------- | ---------- |
-| Baseline pipeline | Thành công (exit code 0) | 2026-09-25 10:34:44 UTC | `data/results/baseline_metrics.json`, `data/reports/phase1_report.md` |
-| Corruption flow   | Thành công (exit code 0) | 2026-09-25 10:36:25 UTC | `data/results/{corrupted,repaired}_metrics.json`, `data/reports/corruption_report.md` |
+| Baseline pipeline | Thành công (exit code 0) | 2026-09-25 10:43:29 UTC | `data/results/baseline_metrics.json`, `data/reports/phase1_report.md` |
+| Corruption flow   | Thành công (exit code 0) | 2026-09-25 10:45:23 UTC | `data/results/{corrupted,repaired}_metrics.json`, `data/reports/corruption_report.md` |
 
 ## 5. Ingestion, cleaning và data contract
 
@@ -233,7 +233,7 @@ Kết luận nhân quả:
 - **Triệu chứng:** LLM Judge luôn rơi vào chế độ dự phòng và demo agent báo lỗi; `judge_accuracy` thực chất là heuristic từ Token F1.
 - **Nguyên nhân:** Model `gemini-2.5-flash` đã bị Google gỡ (404 NOT_FOUND); `metrics.py` bắt mọi exception và âm thầm chuyển sang heuristic, nên không ai thấy lỗi. Khi đổi model, Gemini thỉnh thoảng trả 503 do quá tải.
 - **Cách xử lý:** Đổi `LLM_MODEL` sang `gemini-flash-lite-latest` (bản `gemini-flash-latest` hết hạn mức ngày của free tier; kiểm tra bằng danh sách model của API), thêm retry với exponential backoff (4 lần) cho judge, và ghi `judge_fallback_count` vào metrics để biết bao nhiêu câu phải dùng heuristic.
-- **Cách xác minh:** `data/results/*_metrics.json` có `judge_fallback_count` = 1 (baseline), 0 (corrupted), 0 (repaired).
+- **Cách xác minh:** `data/results/*_metrics.json` có `judge_fallback_count` = 0 (baseline), 0 (corrupted), 0 (repaired): cả 30 lượt chấm đều do LLM thật.
 
 Các vấn đề tích hợp khác đã xử lý: nhánh Observability (GX 1.x) chưa được merge vào `main`; snapshot raw bị thay bằng dữ liệu live không có `categories` (đã khôi phục snapshot chuẩn); manifest embeddings chứa đường dẫn tuyệt đối `D:\...` (đã đổi sang đường dẫn tương đối).
 
