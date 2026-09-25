@@ -8,6 +8,10 @@ from langchain_openai import ChatOpenAI
 from core.config import Settings, normalized_provider, require_llm_credentials
 
 
+# Gioi han retry noi bo cua client; khi het han muc (429) caller se tu fallback thay vi treo lau.
+LLM_CLIENT_MAX_RETRIES = 1
+
+
 def build_llm(settings: Settings, temperature: float = 0.0):
     provider = normalized_provider(settings)
     require_llm_credentials(settings)
@@ -17,6 +21,7 @@ def build_llm(settings: Settings, temperature: float = 0.0):
             model=settings.model_name,
             google_api_key=settings.google_api_key,
             temperature=temperature,
+            max_retries=LLM_CLIENT_MAX_RETRIES,
         )
     if provider == "openai":
         return ChatOpenAI(

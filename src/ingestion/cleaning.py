@@ -39,7 +39,7 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
             continue
 
         # 4. Tạo các cột helper
-        # Sử dụng compact_join để ghép nối danh sách thành chuỗi cách nhau bởi dấu phẩy[cite: 1]
+        # Sử dụng compact_join để ghép nối danh sách thành chuỗi cách nhau bởi dấu phẩy
         authors_joined = utils.compact_join(authors)
         categories_joined = utils.compact_join(categories)
         summary_chars = len(summary)

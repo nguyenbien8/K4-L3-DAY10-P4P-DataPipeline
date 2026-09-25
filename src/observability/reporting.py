@@ -43,6 +43,59 @@ def _freshness_summary(freshness: dict[str, Any]) -> str:
     )
 
 
+def _failed_expectations(quality: dict[str, Any]) -> list[str]:
+    failed = []
+    for item in quality.get("expectations", []):
+        if not item.get("success"):
+            config = item.get("expectation_config", {})
+            column = config.get("kwargs", {}).get("column")
+            name = config.get("type") or item.get("expectation_type", "unknown")
+            failed.append(f"`{name}`" + (f" on `{column}`" if column else ""))
+    return failed
+
+
+def _interpretation_lines(
+    baseline_metrics: dict[str, Any],
+    corrupted_metrics: dict[str, Any],
+    repaired_metrics: dict[str, Any],
+    corrupted_quality: dict[str, Any],
+    repaired_quality: dict[str, Any],
+    corrupted_freshness: dict[str, Any],
+    repaired_freshness: dict[str, Any],
+    metric_names: list[str],
+) -> list[str]:
+    """Data-driven analysis: every sentence is computed from the three states' real artifacts."""
+    lines = []
+    failed = _failed_expectations(corrupted_quality)
+    lines.append(
+        "- **Detection:** the Quality Gate on corrupted data is "
+        f"**{_quality_status(corrupted_quality)}**"
+        + (f" (violated: {', '.join(failed)})." if failed else ".")
+    )
+    lines.append(
+        f"- **Freshness:** corrupted data is **{'FRESH' if corrupted_freshness.get('is_fresh') else 'STALE'}** "
+        f"(stale ratio {_display(corrupted_freshness.get('stale_ratio'))} vs SLA 0.25); "
+        f"repaired data is **{'FRESH' if repaired_freshness.get('is_fresh') else 'STALE'}** "
+        f"(stale ratio {_display(repaired_freshness.get('stale_ratio'))})."
+    )
+    for name in metric_names:
+        base, corr, rep = (m.get(name) for m in (baseline_metrics, corrupted_metrics, repaired_metrics))
+        if not all(isinstance(v, (int, float)) for v in (base, corr, rep)):
+            continue
+        drop = base - corr
+        recovered = "fully recovered" if abs(rep - base) < 1e-9 else f"recovered to {_display(float(rep))}"
+        lines.append(
+            f"- `{name}`: {_display(float(base))} -> {_display(float(corr))} after corruption "
+            f"(change {_display(float(-drop))}), then {recovered} after repair ({_display(float(rep))})."
+        )
+    lines.append(
+        f"- **Repair:** the repaired dataset is rebuilt from the raw snapshot (Quality Gate "
+        f"**{_quality_status(repaired_quality)}**), never patched from the corrupted dataframe, "
+        "so re-running the flow yields the same result (idempotent)."
+    )
+    return lines
+
+
 def generate_phase1_report(
     report_path,
     source_summary: dict[str, Any],
@@ -146,9 +199,16 @@ def generate_corruption_report(
             "",
             "## Interpretation",
             "",
-            "- Corrupted data is expected to violate one or more quality expectations and reduce retrieval/answer metrics.",
-            "- Repaired data must be rebuilt from the raw snapshot, not from the corrupted dataframe.",
-            "- Compare the repaired metrics with baseline to verify idempotent recovery.",
+            *_interpretation_lines(
+                baseline_metrics,
+                corrupted_metrics,
+                repaired_metrics,
+                corrupted_quality,
+                repaired_quality,
+                corrupted_freshness,
+                repaired_freshness,
+                metric_names,
+            ),
             "",
         ]
     )

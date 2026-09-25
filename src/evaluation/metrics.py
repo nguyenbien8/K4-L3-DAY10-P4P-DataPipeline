@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from statistics import mean
 import os
 import sys
+import time
 import types
 from typing import Any
 
@@ -16,6 +17,10 @@ from retrieval.embeddings import MiniLMEmbeddings
 from retrieval.index import LocalEmbeddingIndex
 from retrieval.llm import build_llm
 from retrieval.qa import answer_question
+
+
+JUDGE_MAX_ATTEMPTS = 3
+JUDGE_FALLBACK_REASONING = "Fallback heuristic judge used because the LLM evaluator was unavailable."
 
 
 class JudgeVerdict(BaseModel):
@@ -58,16 +63,19 @@ Return:
 - correct = true only when the answer is materially correct
 - short reasoning
 """.strip()
-    try:
-        llm = build_llm(settings=settings, temperature=0.0).with_structured_output(JudgeVerdict)
-        return llm.invoke(prompt)
-    except Exception:
-        score = 5 if _token_f1(reference, prediction) >= 0.95 else 3 if _token_f1(reference, prediction) >= 0.5 else 1
-        return JudgeVerdict(
-            score=score,
-            correct=score >= 3,
-            reasoning="Fallback heuristic judge used because the LLM evaluator was unavailable.",
-        )
+    for attempt in range(JUDGE_MAX_ATTEMPTS):
+        try:
+            llm = build_llm(settings=settings, temperature=0.0).with_structured_output(JudgeVerdict)
+            return llm.invoke(prompt)
+        except Exception:  # 429/503 tu provider: retry voi exponential backoff truoc khi fallback
+            if attempt < JUDGE_MAX_ATTEMPTS - 1:
+                time.sleep(2 ** (attempt + 1))
+    score = 5 if _token_f1(reference, prediction) >= 0.95 else 3 if _token_f1(reference, prediction) >= 0.5 else 1
+    return JudgeVerdict(
+        score=score,
+        correct=score >= 3,
+        reasoning=JUDGE_FALLBACK_REASONING,
+    )
 
 
 def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, Any]:
@@ -136,6 +144,7 @@ def evaluate_pipeline(
         "mean_token_f1": mean(item["token_f1"] for item in answers),
         "judge_accuracy": mean(1.0 if item["judge"]["correct"] else 0.0 for item in answers),
         "mean_judge_score": mean(item["judge"]["score"] for item in answers),
+        "judge_fallback_count": sum(1 for item in answers if item["judge"]["reasoning"] == JUDGE_FALLBACK_REASONING),
     }
     summary["ragas"] = _run_ragas(settings, answers)
 

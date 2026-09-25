@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 from core.config import Settings, load_settings
-from core.utils import now_utc, write_dataframe, write_json
+from core.utils import now_utc, read_json, write_dataframe, write_json
 from evaluation.metrics import evaluate_pipeline
 from evaluation.testset import build_test_set
 from ingestion.cleaning import build_clean_dataframe
@@ -22,6 +25,18 @@ def _load_or_fetch_raw(settings: Settings) -> tuple[list[PaperRecord], str]:
     if settings.refresh_source or not paths.raw_records_json.exists():
         return fetch_source_records(settings), "fetched (live API or offline snapshot fallback)"
     return load_raw_records(paths.raw_records_json), f"loaded from {paths.raw_records_json.name}"
+
+
+def _test_set_is_stale(test_set_path: Path, clean_df: pd.DataFrame) -> bool:
+    """True neu chua co test set, hoac no tham chieu doc id khong ton tai trong du lieu sach hien tai."""
+    if not test_set_path.exists():
+        return True
+    known_ids = set(clean_df["paper_id"])
+    return any(
+        doc_id not in known_ids
+        for item in read_json(test_set_path)
+        for doc_id in item["ground_truth_doc_ids"]
+    )
 
 
 def _run_agent_demo(settings: Settings, index: LocalEmbeddingIndex, questions: list[str]) -> list[dict[str, Any]]:
@@ -70,8 +85,9 @@ def main() -> None:
             f"See {paths.baseline_quality_report}."
         )
 
-    # 6. Test set co dinh: chi sinh lan dau (hoac REFRESH_TEST_SET=1) de moi lan do deu cung de thi
-    if settings.refresh_test_set or not paths.eval_testset.exists():
+    # 6. Test set co dinh: chi sinh lan dau (hoac REFRESH_TEST_SET=1) de moi lan do deu cung de thi.
+    #    Neu test set cu tro toi paper_id khong con trong du lieu sach thi no da loi thoi -> sinh lai.
+    if settings.refresh_test_set or _test_set_is_stale(paths.eval_testset, clean_df):
         test_set = build_test_set(clean_df, paths.eval_testset)
         print(f"[phase1] Test set: generated {len(test_set)} questions -> {paths.eval_testset.name}")
     else:

@@ -1,173 +1,148 @@
-# BÁO CÁO CÁ NHÂN
+# Member Role Report — Day 10: Data Pipeline & Data Observability
 
 ## 1. Thông tin cá nhân
 
-| Thông tin | Nội dung |
-|---|---|
-| Họ và tên | Nguyễn Công Vinh |
-| MSSV | 2A202602519 |
-| Khóa/Lớp | K4 |
-| Nhóm | P4P |
-| Vai trò chính | Observability & Evaluation |
-| Repository | K4-L3-DAY10-P4P-DataPipeline |
-| Ngày hoàn thành | 25/09/2026 |
+| Thông tin         | Nội dung                  |
+| ------------------ | -------------------------- |
+| Họ và tên       | Nguyễn Công Vinh           |
+| MSSV               | 2A202602519                |
+| Khóa/Lớp         | K4                         |
+| Tên nhóm         | P4P                        |
+| Vai trò chính    | Observability & Evaluation |
+| Repository         | https://github.com/nguyenbien8/K4-L3-DAY10-P4P-DataPipeline |
+| Ngày hoàn thành | 2026-09-25                 |
 
-## 2. Vai trò và phạm vi phụ trách
+## 2. Vai trò và phạm vi công việc
 
-### 2.1. Phần việc phụ trách chính
+### Phần việc sở hữu
 
-| Hạng mục | File/Artifact liên quan | Trạng thái |
-|---|---|---|
-| Xây dựng kiểm tra chất lượng dữ liệu | `src/observability/quality.py` | Đã chạy: `success=true`, 6/6 expectations pass |
-| Xây dựng báo cáo quan sát pipeline | `src/observability/reporting.py` | Hoàn thành phần code, chờ kiểm thử tích hợp |
-| Xây dựng bộ sinh test set đánh giá | `src/evaluation/testset.py` | Đã chạy: sinh đủ 10 câu hỏi |
-| Thiết kế bộ câu hỏi đánh giá theo dữ liệu mới | `data/eval/test_set.json` | Hoàn thành và đã xác minh |
+| Module/deliverable | File/hàm phụ trách | Input nhận vào | Output bàn giao | Trạng thái |
+| --- | --- | --- | --- | --- |
+| Quality Gate GX 1.x | `src/observability/quality.py::run_data_quality_checks` | DataFrame + settings | `data/quality/{baseline,corrupted,repaired}_quality_report.json` | Hoàn thành |
+| Freshness SLA | `src/observability/quality.py::build_freshness_report` | Cột `age_days`/`published` | `data/quality/*freshness_report.json` | Hoàn thành |
+| Test set benchmark | `src/evaluation/testset.py::build_test_set` | DataFrame sạch | `data/eval/test_set.json` (10 câu) | Hoàn thành |
+| Báo cáo Markdown | `src/observability/reporting.py` | metrics, quality, freshness | `data/reports/phase1_report.md`, `corruption_report.md` | Hoàn thành |
 
-### 2.2. Phần việc hỗ trợ nhóm
+### Việc hỗ trợ ngoài phạm vi chính
 
-- Đối chiếu dữ liệu Crossref mới trong thư mục `data/raw` để cập nhật bộ câu hỏi đánh giá.
-- Chuẩn hóa cấu trúc test set để phục vụ đánh giá retrieval và answer quality.
-- Xác định các tiêu chí data quality, freshness và nội dung cần có trong báo cáo pipeline.
+| Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
+| --- | --- | --- |
+| Đối chiếu dữ liệu Crossref trong `data/raw` để thiết kế câu hỏi | Người 2 | Câu hỏi bám đúng trường có trong dữ liệu |
+| Thống nhất khóa `question_type`, `ground_truth_doc_ids` với `evaluation/metrics.py` | Người 1, Người 3 | `evaluate_pipeline` đọc test set không lỗi |
 
 ## 3. Kết quả theo vai trò
 
-| Yêu cầu | Kết quả thực hiện | Minh chứng | Cách xác minh |
-|---|---|---|---|
-| Kiểm tra chất lượng dữ liệu | Xây dựng các kiểm tra số lượng bản ghi, trường bắt buộc, tính duy nhất của `paper_id` và độ dài summary | `data/quality/test_quality_report.json` | 24 dòng; `success=true`; 6/6 expectations pass |
-| Kiểm tra độ mới dữ liệu | Tính ngày mới nhất, cũ nhất, số bản ghi quá hạn, tỷ lệ stale và trạng thái freshness | `src/observability/quality.py` | |
-| Báo cáo baseline và corruption | Tạo nội dung báo cáo Markdown cho baseline và so sánh Baseline/Corrupted/Repaired | `src/observability/reporting.py` | |
-| Bộ dữ liệu đánh giá | Tạo 10 câu hỏi với đáp án và DOI làm ground-truth document ID | `data/eval/test_set.json` | 10 câu hỏi, 10 DOI duy nhất |
-| Sinh test set tái lập | Xây dựng logic chọn tài liệu và phân bổ loại câu hỏi có tính xác định | `src/evaluation/testset.py` | 4 summary, 3 authors, 3 date |
+| Nhiệm vụ đã thực hiện | File/hàm/artifact liên quan | Kết quả bàn giao | Cách xác minh |
+| --- | --- | --- | --- |
+| 4 expectations GX 1.x | `quality.py` | Baseline PASS 6/6 kiểm tra, corrupted FAIL | `baseline_quality_report.json`, `corrupted_quality_report.json` |
+| Freshness SLA | `quality.py` | Baseline FRESH, corrupted STALE | `freshness_report.json`, `corrupted_freshness_report.json` |
+| Test set 10 câu | `testset.py` | summary 3, authors 3, date 2, categories 2 | Guide Bước 5: `Sinh được 10 câu hỏi test` |
+| Báo cáo tự động | `reporting.py` | Bảng 3 trạng thái + phân tích tính từ số liệu | `data/reports/corruption_report.md` |
 
-### Đầu ra cụ thể
+Output cụ thể: trên dữ liệu corrupted, Quality Gate phát hiện 2 vi phạm (`expect_column_values_to_be_unique` trên `paper_id`, `expect_column_value_lengths_to_be_between` trên `summary`) và freshness báo STALE với tỷ lệ bài cũ 0.318.
 
-- `quality.py` kiểm tra các ràng buộc chính của dữ liệu sạch bằng Great Expectations và tạo kết quả dạng JSON.
-- `quality.py` đánh giá freshness theo ngưỡng thời gian và tỷ lệ bản ghi quá hạn được cấu hình.
-- `reporting.py` tổng hợp trạng thái quality/freshness và các chỉ số đánh giá thành báo cáo Markdown.
-- `testset.py` sinh câu hỏi theo các nhóm summary, authors, publication date và category khi dữ liệu hỗ trợ.
-- `test_set.json` hiện chứa 10 câu hỏi gắn với 10 DOI duy nhất từ dữ liệu raw mới.
+## 4. Giải thích phần kỹ thuật đã thực hiện
 
-## 4. Giải thích kỹ thuật phần việc chính
+### Vấn đề cần giải quyết
 
-### 4.1. Bài toán cần giải quyết
+Pipeline cần cơ chế phát hiện dữ liệu không đạt chất lượng hoặc quá cũ trước khi vào vector store, và cần đo được ảnh hưởng của lỗi dữ liệu tới RAG bằng một test set có ground truth ổn định.
 
-Pipeline cần có cơ chế phát hiện dữ liệu không đạt chất lượng, dữ liệu quá cũ và đo được ảnh hưởng của lỗi dữ liệu đến hệ thống RAG. Vì vậy, phần Observability & Evaluation phải cung cấp các kiểm tra có thể lặp lại, artifact rõ ràng và một test set có ground truth bám sát dữ liệu thật.
+### Cách triển khai
 
-### 4.2. Cách tiếp cận
+1. **GX 1.x đúng chuẩn:** `gx.get_context(mode="ephemeral")` → `data_sources.add_pandas` → `add_dataframe_asset` → `add_batch_definition_whole_dataframe` → `get_batch(batch_parameters={"dataframe": df})`, không dùng cú pháp cũ `context.sources.pandas_default`.
+2. **4 expectations:** `ExpectTableRowCountToBeBetween(5, 5000)`; `ExpectColumnValuesToNotBeNull` cho `paper_id`, `title`, `text_for_embedding`; `ExpectColumnValuesToBeUnique("paper_id")`; `ExpectColumnValueLengthsToBeBetween("summary", min_value=30)`. Mỗi expectation được validate riêng; nếu thiếu cột thì ghi thành check FAIL thay vì làm sập pipeline.
+3. **Freshness tách riêng quality:** đếm dòng có `age_days > 180`, `is_fresh = stale_ratio ≤ 0.25`; ghi thêm ngày mới nhất/cũ nhất.
+4. **Test set xác định:** chọn tài liệu theo thứ tự cố định, mỗi câu một DOI khác nhau, dùng mẫu câu mà `qa.py` nhận ra (tên bài trong dấu nháy đơn). Nếu dữ liệu không có category thì tự phân bổ sang summary/authors/date để không tạo ground truth giả.
+5. **Báo cáo từ artifact:** mọi con số trong Markdown lấy từ payload JSON thật, không ghi cứng.
 
-1. Kiểm tra các điều kiện nền tảng của dữ liệu: số dòng, trường bắt buộc, DOI duy nhất và nội dung đủ dài.
-2. Tách freshness khỏi data quality để có thể xác định rõ lỗi về cấu trúc/nội dung và lỗi về thời gian.
-3. Tạo báo cáo Markdown từ các artifact JSON thay vì ghi cứng kết quả.
-4. Sinh test set có cấu trúc ổn định gồm `id`, `question_type`, `question`, `ground_truth` và `ground_truth_doc_ids`.
-5. Khi metadata category không có trong dữ liệu mới, phân bổ lại câu hỏi sang summary, authors và date để không tạo ground truth giả.
+### Input, output và contract
 
-### 4.3. Hợp đồng đầu vào và đầu ra
+| Thành phần | Mô tả |
+| --- | --- |
+| Input | DataFrame sạch/bẩn/repaired (cột `paper_id`, `title`, `summary`, `text_for_embedding`, `age_days`, `published`), `Settings` |
+| Output | Quality report `{report_name, success, row_count, expectations[]}`; freshness `{latest_published, oldest_published, stale_rows, total_rows, stale_ratio, is_fresh}`; test set `[{id, question_type, question, ground_truth, ground_truth_doc_ids}]` |
+| Module phụ thuộc | `ingestion/cleaning.py` (schema), `core/config.py` (đường dẫn, ngưỡng 180 ngày) |
+| Module sử dụng output | `pipelines/phase1.py`, `pipelines/corruption_flow.py`, `evaluation/metrics.py` |
+| Điều kiện lỗi cần xử lý | Thiếu cột; DataFrame rỗng; không đủ tài liệu cho một dạng câu hỏi; không có category |
 
-| Thành phần | Đầu vào | Đầu ra |
-|---|---|---|
-| Data quality | DataFrame dữ liệu sạch và settings | Kết quả kiểm tra và artifact JSON |
-| Freshness | Cột ngày xuất bản và cấu hình ngưỡng | Thống kê stale/fresh và artifact JSON |
-| Reporting | Kết quả quality, freshness và evaluation | Báo cáo Markdown |
-| Test-set generator | Dữ liệu paper đã chuẩn hóa | Danh sách câu hỏi có ground truth |
+### Cách xác minh
 
-### 4.4. Cách xác minh
-
-```powershell
-python -c "from core.config import load_settings; from observability.quality import run_data_quality_checks; import pandas as pd; s=load_settings(); df=pd.read_json(s.paths.clean_json); res=run_data_quality_checks(df, s, 'test'); print('Tín hiệu hoàn thành: Quality check status =', res['success'])"
-
-python -c "from core.config import load_settings; from evaluation.testset import build_test_set; import pandas as pd; s=load_settings(); df=pd.read_json(s.paths.clean_json); ts=build_test_set(df, s.paths.eval_testset); print('Tín hiệu hoàn thành: Sinh được', len(ts), 'câu hỏi test')"
+```bash
+python -c "from core.config import load_settings; from observability.quality import run_data_quality_checks; import pandas as pd; s=load_settings(); df=pd.read_json(s.paths.clean_json); res=run_data_quality_checks(df, s, 'test'); print(f'Tín hiệu hoàn thành: Quality check status = {res[\"success\"]}')"
+python -c "from core.config import load_settings; from evaluation.testset import build_test_set; import pandas as pd; s=load_settings(); df=pd.read_json(s.paths.clean_json); ts=build_test_set(df, s.paths.eval_testset); print(f'Tín hiệu hoàn thành: Sinh được {len(ts)} câu hỏi test')"
 ```
 
-- Kết quả mong đợi: clean dataset có 24 dòng, Quality Gate trả `True` và test set có 10 câu hỏi.
-- Kết quả thực tế: clean dataset có 24 dòng; Quality Gate `success=true` với 6/6 expectations pass; test set có 10 câu hỏi gắn với 10 DOI duy nhất.
-- Artifact/log minh chứng: `data/clean/papers_clean.json`, `data/clean/papers_clean.csv`, `data/quality/test_quality_report.json`, `data/eval/test_set.json`.
-- Trạng thái ChromaDB: chưa có collection `papers-baseline`; phần vector indexing của CP2 chưa đạt tín hiệu 24 documents.
+- **Kết quả mong đợi:** `Quality check status = True`, `Sinh được 10 câu hỏi test`.
+- **Kết quả thực tế:** `Quality check status = True`, `Sinh được 10 câu hỏi test`.
+- **Artifact/log:** `data/quality/baseline_quality_report.json`, `data/eval/test_set.json`.
 
-## 5. Quyết định kỹ thuật quan trọng
+## 5. Một quyết định kỹ thuật quan trọng
 
-### Quyết định: Không tạo câu hỏi category khi dữ liệu nguồn không có category
+- **Bối cảnh:** Có lúc dữ liệu Crossref tải live không có trường category, trong khi đề yêu cầu câu hỏi `categories`.
+- **Các phương án đã cân nhắc:** (a) tự suy luận category từ title/summary; (b) vẫn tạo câu hỏi category với đáp án rỗng; (c) phân bổ số câu category sang các trường có ground truth đáng tin cậy.
+- **Phương án đã chọn:** (c) làm cơ chế dự phòng trong code; khi dữ liệu có category (snapshot hiện tại) thì dùng đủ 4 dạng 3/3/2/2.
+- **Lý do:** Không tạo nhãn không có căn cứ; test set luôn bám dữ liệu thật và tái lập được.
+- **Bằng chứng quyết định phù hợp:** với snapshot hiện tại, test set có đủ 4 dạng; baseline `retrieval_hit_rate` = 1.000.
 
-- **Bối cảnh:** 24 bản ghi Crossref mới không có giá trị trong `categories` và `primary_category`.
-- **Các phương án đã cân nhắc:**
-  - Tự suy luận category từ title hoặc summary.
-  - Vẫn tạo câu hỏi category với đáp án rỗng.
-  - Phân bổ số câu hỏi category sang các trường có ground truth đáng tin cậy.
-- **Phương án được chọn:** Phân bổ bộ 10 câu thành 4 câu summary, 3 câu authors và 3 câu publication date.
-- **Lý do:** Giữ test set bám sát dữ liệu thật, tránh tạo nhãn chủ đề không có căn cứ và bảo đảm kết quả đánh giá có thể tái lập.
-- **Đánh đổi:** Chưa đánh giá được khả năng truy vấn theo category cho đến khi pipeline bổ sung metadata này.
+## 6. Một lỗi hoặc blocker đã xử lý
 
-## 6. Bug hoặc blocker đã gặp
+- **Triệu chứng/lỗi nguyên văn:** Khi kiểm tra CP2, `data/chroma/chroma.sqlite3` tồn tại nhưng `list_collections()` trả danh sách rỗng; chưa có manifest `data/embeddings/papers_embeddings.json`.
+- **Lệnh hoặc bước tái hiện:** Chạy test set xong rồi truy vấn ChromaDB trước khi pipeline tích hợp được chạy.
+- **Nguyên nhân gốc:** Bước build index chưa được gọi; ngoài ra nhánh `vinh/Observability-Evaluation` chưa được merge vào `main`, nên `main` vẫn dùng bản kiểm tra bằng pandas thay vì GX 1.x.
+- **Cách xử lý:** Người 1 merge nhánh vào `main` và chạy `run_phase1.py`, tạo collection `papers-baseline`.
+- **Cách xác minh sau khi sửa:** `papers-baseline` 24 docs, `papers-corrupted` 22 docs, `papers-repaired` 24 docs.
+- **Điều học được:** Tín hiệu hoàn thành của một checkpoint phải kiểm trên nhánh `main`, không chỉ trên nhánh cá nhân.
 
-### Blocker: Phần ChromaDB indexing của CP2 chưa hoàn thành
+## 7. Hiểu biết về luồng end-to-end
 
-- **Hiện tượng:** `data/chroma/chroma.sqlite3` tồn tại nhưng ChromaDB chưa có collection; manifest `data/embeddings/papers_embeddings.json` cũng chưa được tạo.
-- **Phạm vi ảnh hưởng:** Test set của CP2 đã đạt 10 câu nhưng CP2 chưa thể được đánh dấu hoàn thành và chưa thể chạy baseline evaluation.
-- **Những gì đã kiểm tra:** Clean dataset có 24 dòng, Quality Gate pass và test set có 10 câu hỏi; truy vấn `list_collections()` trả danh sách rỗng.
-- **Nguyên nhân hiện tại:** Bước build embedding/index chưa tạo thành công collection `papers-baseline`.
-- **Bước tiếp theo:** Chạy `LocalEmbeddingIndex.build(...)`, xác minh `papers-baseline` có đúng 24 documents, sau đó mới chạy CP3.
-
-## 7. Hiểu biết end-to-end về hệ thống
-
-### 7.1. Dữ liệu đi từ Crossref đến Chroma như thế nào?
-
-Dữ liệu được lấy từ Crossref và lưu dưới dạng raw JSON. Bước cleaning chuẩn hóa trường dữ liệu, loại bản ghi lỗi và tạo `text_for_embedding`. Sau đó hệ thống sinh embedding, lưu vector cùng metadata và document ID vào Chroma để phục vụ truy xuất.
-
-### 7.2. Test set đánh giá retrieval và answer quality như thế nào?
-
-Mỗi câu hỏi có `ground_truth_doc_ids` để kiểm tra tài liệu đúng có nằm trong kết quả truy xuất hay không. Trường `ground_truth` được dùng để so sánh nội dung câu trả lời bằng các metric như token F1 hoặc evaluator được cấu hình trong dự án.
-
-### 7.3. Data quality và freshness khác nhau ở đâu?
-
-Data quality kiểm tra cấu trúc và tính hợp lệ của dữ liệu như thiếu trường, trùng ID hoặc nội dung quá ngắn. Freshness kiểm tra dữ liệu có đủ mới theo thời gian hay không. Một bản ghi có thể đúng cấu trúc nhưng vẫn bị coi là stale.
-
-### 7.4. Vì sao phải dùng cùng một test set cho baseline và corrupted?
-
-Dùng cùng test set giúp kiểm soát biến số đầu vào. Khi đó chênh lệch metric phản ánh tác động của corruption hoặc repair, thay vì xuất phát từ việc thay đổi câu hỏi hay ground truth.
-
-### 7.5. Khi nào có thể kết luận repair thành công?
-
-Repair thành công khi các kiểm tra quality/freshness phục hồi, pipeline tạo đủ artifact và các metric của phiên bản repaired tiến gần hoặc đạt lại baseline trên cùng một test set.
+1. **Crossref → Chroma:** raw JSON được parse và lưu; cleaning chuẩn hóa trường và tạo `text_for_embedding`; Quality Gate kiểm tra; embedding MiniLM cùng metadata và document ID được nạp vào Chroma.
+2. **Evaluation set:** `ground_truth_doc_ids` dùng để kiểm tra tài liệu đúng có trong top-4 kết quả hay không (Hit Rate); `ground_truth` dùng cho Token F1 và LLM Judge.
+3. **Quality vs freshness:** quality kiểm tra cấu trúc và tính hợp lệ (thiếu trường, trùng ID, nội dung quá ngắn); freshness kiểm tra độ mới theo thời gian. Một bản ghi có thể đúng cấu trúc nhưng vẫn stale.
+4. **Cùng test set:** kiểm soát biến đầu vào để chênh lệch metric chỉ phản ánh corruption hoặc repair.
+5. **Repair thành công:** quality/freshness phục hồi (PASS, FRESH) và metric repaired đạt lại baseline trên cùng test set.
 
 ## 8. Phân tích kết quả
 
-| Metric | Baseline | Corrupted | Repaired | Nhận xét |
-|---|---:|---:|---:|---|
-| Retrieval | | | | |
-| Answer quality | | | | |
-| Data quality | Pass: 6/6 expectations, 24 dòng | | | CP1 đã được xác minh bằng artifact JSON |
-| Freshness | | | | |
+### Metrics chính
 
-### Kết luận từ kết quả
+| Metric/signal          | Baseline | Corrupted | Repaired | Nhận xét của cá nhân |
+| ---------------------- | -------: | --------: | -------: | ------------------------- |
+| `retrieval_hit_rate` | 1.000 | 0.500 | 1.000 | |
+| `mean_token_f1`      | 1.000 | 0.672 | 1.000 | |
+| `judge_accuracy`     | 1.000 | 0.700 | 1.000 | |
+| `mean_judge_score`   | 5 | 3.600 | 5 | |
+| Quality checks         | PASS | FAIL | PASS | Duplicate và blank summary bị phát hiện |
+| Freshness status       | FRESH | STALE | FRESH | Tỷ lệ stale 0.042 / 0.318 / 0.042 |
 
-- Dữ liệu sạch hiện đáp ứng toàn bộ 6 expectations đã cấu hình: đúng ngưỡng số dòng, không null ở ba trường bắt buộc, `paper_id` duy nhất và summary dài tối thiểu 30 ký tự.
-- Test set đã sinh đủ 10 câu trên 10 DOI duy nhất. Do dữ liệu nguồn không có category, bộ câu hỏi thực tế gồm 4 summary, 3 authors và 3 date.
-- Chưa có cơ sở kết luận về retrieval hoặc answer quality vì collection Chroma baseline chưa được tạo.
+### Kết luận từ số liệu
 
-## 9. Bài học và hướng cải thiện
+1. Duplicate rows + blank summary + stale date → Quality Gate FAIL (unique `paper_id`, độ dài `summary`) và freshness STALE → Hit Rate 1.000 → 0.500, Token F1 1.000 → 0.672.
+2. Repair từ raw → Quality Gate PASS, FRESH → metric repaired bằng baseline.
 
-### Bài học rút ra
+Corruption ảnh hưởng rõ nhất tới tín hiệu quan sát là **duplicate rows** và **blank summary**, vì đó là hai lỗi bị GX bắt trực tiếp; stale date được phát hiện qua freshness.
 
-- Artifact và schema ổn định giúp các thành viên tích hợp các bước pipeline độc lập dễ hơn.
-- Data quality và freshness cần được đo riêng để việc chẩn đoán lỗi rõ ràng.
-- Test set phải được xây dựng từ dữ liệu thật; metadata thiếu sẽ ảnh hưởng trực tiếp đến phạm vi đánh giá RAG.
+Kết quả khác kỳ vọng: **inject noise** và **truncate title** vừa không trúng tài liệu nào trong test set (không đổi metric), vừa không vi phạm expectation nào trong 4 expectations bắt buộc, nên lọt qua Quality Gate; cần thêm expectation cho độ dài `title` và ký tự rác.
+
+## 9. Điều học được và hướng cải thiện
+
+### Ba điều quan trọng nhất
+
+1. Artifact và schema ổn định giúp các thành viên tích hợp độc lập dễ hơn.
+2. Data quality và freshness cần được đo riêng để chẩn đoán lỗi rõ ràng.
+3. Test set phải xây từ dữ liệu thật; metadata thiếu sẽ thu hẹp phạm vi đánh giá RAG.
 
 ### Nếu có thêm thời gian
 
-- Bổ sung hoặc làm giàu category từ nguồn đáng tin cậy ở bước ingestion/cleaning.
-- Viết unit test cho quality checks, freshness checks, report rendering và test-set generation.
-- Chạy đầy đủ baseline, corruption và repair để bổ sung số liệu cùng artifact vào báo cáo.
+Thêm expectation `ExpectColumnValueLengthsToBeBetween("title", min_value=10)` và regex chặn ký tự rác, rồi đo số kịch bản corruption bị Quality Gate phát hiện (hiện tại 3/6 tính cả freshness). Viết unit test cho quality, freshness, report và test set.
 
-## 10. Cam kết cá nhân
+## 10. Cam kết của thành viên
 
-- [x] Báo cáo phản ánh đúng phần việc đã thực hiện.
-- [x] Tôi hiểu luồng xử lý end-to-end của hệ thống.
-- [x] Các kết luận về CP1 và test set CP2 có số liệu hoặc artifact minh chứng.
-- [x] Không khai báo CP2 hoặc kiểm thử end-to-end thành công khi Chroma indexing chưa hoàn tất.
-- [x] Không đưa secret hoặc thông tin nhạy cảm vào báo cáo.
-- [x] Nội dung không sao chép báo cáo của thành viên khác.
+- [ ] Nội dung báo cáo phản ánh đúng phần việc và mức hiểu của tôi.
+- [ ] Tôi có thể giải thích luồng end-to-end, không chỉ module mình phụ trách.
+- [ ] Mọi kết luận về kết quả đều có artifact hoặc metric để đối chiếu.
+- [ ] Tôi không ghi "đã chạy thành công" cho phần chưa được kiểm chứng.
+- [ ] Báo cáo không chứa `.env`, API key, token hoặc secret.
+- [ ] Báo cáo này không phải bản sao nguyên văn của báo cáo nhóm hoặc báo cáo thành viên khác.
 
-**Người thực hiện:** Nguyễn Công Vinh
-
-**MSSV:** 2A202602519
-
-**Ngày:** 25/09/2026
+**Họ và tên:** Nguyễn Công Vinh
+**Ngày xác nhận:** 2026-09-25
