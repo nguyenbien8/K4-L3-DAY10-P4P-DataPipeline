@@ -7,11 +7,17 @@ import pandas as pd
 from core.utils import first_sentence, write_json
 
 
-QUESTION_COUNTS = {
+PREFERRED_QUESTION_COUNTS = {
     "summary": 3,
     "authors": 3,
     "date": 2,
     "categories": 2,
+}
+
+QUESTION_COUNTS_WITHOUT_CATEGORIES = {
+    "summary": 4,
+    "authors": 3,
+    "date": 3,
 }
 
 
@@ -52,8 +58,15 @@ def _candidates(df: pd.DataFrame, question_type: str) -> list[dict[str, str]]:
     return candidates
 
 
+def _question_counts(df: pd.DataFrame) -> dict[str, int]:
+    """Use all four types when source categories exist; otherwise avoid invented labels."""
+    if len(_candidates(df, "categories")) >= PREFERRED_QUESTION_COUNTS["categories"]:
+        return PREFERRED_QUESTION_COUNTS
+    return QUESTION_COUNTS_WITHOUT_CATEGORIES
+
+
 def build_test_set(df: pd.DataFrame, output_path) -> list[dict[str, Any]]:
-    """Create a deterministic 10-question benchmark across four question types."""
+    """Create a deterministic 10-question benchmark from available source fields."""
     if not isinstance(df, pd.DataFrame):
         raise TypeError("build_test_set expects a pandas DataFrame.")
     if df.empty:
@@ -62,7 +75,7 @@ def build_test_set(df: pd.DataFrame, output_path) -> list[dict[str, Any]]:
     test_set: list[dict[str, Any]] = []
     used_document_ids: set[str] = set()
     next_id = 1
-    for question_type, count in QUESTION_COUNTS.items():
+    for question_type, count in _question_counts(df).items():
         candidates = _candidates(df, question_type)
         if len(candidates) < count:
             raise ValueError(
