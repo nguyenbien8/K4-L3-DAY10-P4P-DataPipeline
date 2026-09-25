@@ -13,7 +13,7 @@
 | 1 | | | | Trưởng nhóm / Pipeline Integrator (`core/`, `phase1.py`, `corruption_flow.py`) | `report/<MSSV1>_HoTen.md` |
 | 2 | Lê Đức Tùng | 2A202603005 | 26ai.tungld2@vinuni.edu.vn | Data Foundation & Recovery (`crossref.py`, `cleaning.py`, raw data) | `report/2A202603005_LeDucTung.md` |
 | 3 | | | | RAG & Vector Index (`retrieval/index.py`, `embeddings.py`, ChromaDB) | `report/<MSSV3>_HoTen.md` |
-| 4 | | | | Observability & Evaluation (`quality.py` GX 1.x, `testset.py`, reporting) | `report/<MSSV4>_HoTen.md` |
+| 4 | Nguyễn Công Vinh | 2A202602519 | | Observability & Evaluation (`quality.py` GX 1.x, `testset.py`, `reporting.py`) | `report/2A202602519_NguyenCongVinh.md` |
 
 *(Nếu nhóm có 3 hoặc 5-6 thành viên, xem bảng phân công chi tiết theo vai trò trong file `CHECKPOINTS.md`)*.
 
@@ -48,11 +48,14 @@
 - **Điều học được / Đóng góp chính:**
   - Cách cô lập các không gian vector để so sánh khách quan giữa dữ liệu sạch và dữ liệu bị lỗi.
 
-### ## HoVaTen4-MSSV4
+### ## Nguyễn Công Vinh - 2A202602519
 - **Vai trò:** Phụ trách Data Observability & Benchmark Evaluation.
 - **Công việc chi tiết đã hoàn thành:**
-  - Thiết lập Quality Gate theo chuẩn mới **Great Expectations 1.x** và giám sát Freshness SLA trong `src/observability/quality.py`.
-  - Xây dựng bộ câu hỏi đánh giá chuẩn trong `src/evaluation/testset.py`.
-  - Đo lường và xuất bảng đối chiếu 3 trạng thái vào `data/reports/corruption_report.md`.
+  - Xây dựng Quality Gate theo chuẩn **Great Expectations 1.x**, kiểm tra số lượng bản ghi, trường bắt buộc, tính duy nhất của `paper_id` và độ dài summary trong `src/observability/quality.py`.
+  - Xây dựng kiểm tra Freshness SLA, thống kê số lượng và tỷ lệ bản ghi quá hạn, đồng thời xuất kết quả quality/freshness dạng JSON.
+  - Hoàn thiện logic sinh benchmark trong `src/evaluation/testset.py` với các trường `id`, `question_type`, `question`, `ground_truth` và `ground_truth_doc_ids`.
+  - Thiết kế lại `data/eval/test_set.json` gồm 10 câu hỏi dựa trên dữ liệu Crossref mới; phân bổ câu hỏi theo summary, authors và publication date do dữ liệu nguồn chưa có category.
+  - Xây dựng `src/observability/reporting.py` để tổng hợp báo cáo baseline và bảng so sánh Baseline/Corrupted/Repaired khi pipeline cung cấp đủ kết quả đầu vào.
 - **Điều học được / Đóng góp chính:**
-  - Cách thiết lập hệ thống cảnh báo sớm chặn đứng hiện tượng Silent Failure trước khi dữ liệu vào serving layer.
+  - Hiểu cách thiết lập Quality Gate và Freshness SLA để phát hiện sớm lỗi dữ liệu trước khi dữ liệu đi vào serving layer.
+  - Hiểu cách xây dựng test set có ground truth bám sát dữ liệu thật và bảo đảm cùng một benchmark được dùng khi so sánh baseline, corrupted và repaired.
