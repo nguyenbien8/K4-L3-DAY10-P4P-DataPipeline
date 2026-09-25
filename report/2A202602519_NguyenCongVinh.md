@@ -27,8 +27,8 @@
 
 | Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
 | --- | --- | --- |
-| Đối chiếu dữ liệu Crossref trong `data/raw` để thiết kế câu hỏi | Người 2 | Câu hỏi bám đúng trường có trong dữ liệu |
-| Thống nhất khóa `question_type`, `ground_truth_doc_ids` với `evaluation/metrics.py` | Người 1, Người 3 | `evaluate_pipeline` đọc test set không lỗi |
+| Đối chiếu dữ liệu Crossref trong `data/raw` để thiết kế câu hỏi | Lê Đức Tùng | Câu hỏi bám đúng trường có trong dữ liệu |
+| Thống nhất khóa `question_type`, `ground_truth_doc_ids` với `evaluation/metrics.py` | Nguyễn Văn Biển, Huỳnh Tấn Trung | `evaluate_pipeline` đọc test set không lỗi |
 
 ## 3. Kết quả theo vai trò
 
@@ -89,7 +89,7 @@ python -c "from core.config import load_settings; from evaluation.testset import
 - **Triệu chứng/lỗi nguyên văn:** Khi kiểm tra CP2, `data/chroma/chroma.sqlite3` tồn tại nhưng `list_collections()` trả danh sách rỗng; chưa có manifest `data/embeddings/papers_embeddings.json`.
 - **Lệnh hoặc bước tái hiện:** Chạy test set xong rồi truy vấn ChromaDB trước khi pipeline tích hợp được chạy.
 - **Nguyên nhân gốc:** Bước build index chưa được gọi; ngoài ra nhánh `vinh/Observability-Evaluation` chưa được merge vào `main`, nên `main` vẫn dùng bản kiểm tra bằng pandas thay vì GX 1.x.
-- **Cách xử lý:** Người 1 merge nhánh vào `main` và chạy `run_phase1.py`, tạo collection `papers-baseline`.
+- **Cách xử lý:** Nguyễn Văn Biển merge nhánh vào `main` và chạy `run_phase1.py`, tạo collection `papers-baseline`.
 - **Cách xác minh sau khi sửa:** `papers-baseline` 24 docs, `papers-corrupted` 22 docs, `papers-repaired` 24 docs.
 - **Điều học được:** Tín hiệu hoàn thành của một checkpoint phải kiểm trên nhánh `main`, không chỉ trên nhánh cá nhân.
 

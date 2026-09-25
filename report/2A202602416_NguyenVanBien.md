@@ -18,19 +18,19 @@
 
 | Module/deliverable | File/hàm phụ trách | Input nhận vào | Output bàn giao | Trạng thái |
 | --- | --- | --- | --- | --- |
-| Baseline pipeline | `src/pipelines/phase1.py::main`, `script/run_phase1.py` | Raw records, hàm của Người 2/3/4 | Clean, collection `papers-baseline`, `baseline_metrics.json`, `phase1_report.md` | Hoàn thành |
+| Baseline pipeline | `src/pipelines/phase1.py::main`, `script/run_phase1.py` | Raw records, hàm của Lê Đức Tùng, Huỳnh Tấn Trung, Nguyễn Công Vinh | Clean, collection `papers-baseline`, `baseline_metrics.json`, `phase1_report.md` | Hoàn thành |
 | Corruption/repair flow | `src/pipelines/corruption_flow.py::main`, `script/run_corruption_flow.py` | Artifact Phase 1 | `corrupted_metrics.json`, `repaired_metrics.json`, `corruption_report.md` | Hoàn thành |
 | Cấu hình & tiện ích | `src/core/config.py`, `src/core/utils.py::write_dataframe` | `.env` | Đường dẫn artifact, lưu CSV + JSON | Hoàn thành |
-| Tích hợp & nghiệm thu | Merge `main`, `docs/TEAM.md`, `report/group_report.md` | Nhánh của Người 2/3/4 | Repo nộp bài | Hoàn thành |
+| Tích hợp & nghiệm thu | Merge `main`, `docs/TEAM.md`, `report/group_report.md` | Nhánh của Lê Đức Tùng, Huỳnh Tấn Trung, Nguyễn Công Vinh | Repo nộp bài | Hoàn thành |
 
 ### Việc hỗ trợ ngoài phạm vi chính
 
 | Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
 | --- | --- | --- |
-| Merge nhánh `vinh/Observability-Evaluation` (GX 1.x) còn nằm ngoài `main` | Người 4 | `main` dùng đúng Great Expectations 1.x |
-| Sửa manifest lưu đường dẫn tuyệt đối | Người 3 (`retrieval/index.py`) | `persist_path` = `data/chroma` |
-| Chỉnh `corruption.py` theo Guide (drop 20%, title < 8 ký tự, lùi 365 ngày trên ~30% dòng) | Người 2 | Freshness chuyển STALE trên dữ liệu bẩn |
-| Retry LLM Judge và đếm `judge_fallback_count` | Người 4 (`evaluation/metrics.py`) | Judge thật chấm điểm, số câu phải dùng heuristic được ghi lại |
+| Merge nhánh `vinh/Observability-Evaluation` (GX 1.x) còn nằm ngoài `main` | Nguyễn Công Vinh | `main` dùng đúng Great Expectations 1.x |
+| Sửa manifest lưu đường dẫn tuyệt đối | Huỳnh Tấn Trung (`retrieval/index.py`) | `persist_path` = `data/chroma` |
+| Chỉnh `corruption.py` theo Guide (drop 20%, title < 8 ký tự, lùi 365 ngày trên ~30% dòng) | Lê Đức Tùng | Freshness chuyển STALE trên dữ liệu bẩn |
+| Retry LLM Judge và đếm `judge_fallback_count` | Nguyễn Công Vinh (`evaluation/metrics.py`) | Judge thật chấm điểm, số câu phải dùng heuristic được ghi lại |
 
 ## 3. Kết quả theo vai trò
 
