@@ -12,6 +12,22 @@ from core.utils import read_json, safe_slug, write_json
 from retrieval.embeddings import MiniLMEmbeddings
 
 
+def _to_portable_path(path: Path, project_dir: Path) -> str:
+    """Ghi duong dan tuong doi so voi project root de manifest khong lo duong dan may ca nhan."""
+    try:
+        return path.resolve().relative_to(project_dir.resolve()).as_posix()
+    except ValueError:
+        return path.name
+
+
+def _resolve_persist_path(value: str, settings: Settings) -> Path:
+    candidate = Path(value)
+    if not candidate.is_absolute():
+        return settings.paths.project_dir / candidate
+    # Manifest cu co the chua duong dan tuyet doi cua may khac: fallback ve thu muc chroma cua project.
+    return candidate if candidate.exists() else settings.paths.chroma_dir
+
+
 @dataclass(frozen=True)
 class SearchResult:
     paper_id: str
@@ -116,7 +132,7 @@ class LocalEmbeddingIndex:
             {
                 "backend": "chroma",
                 "embedding_model": settings.embedding_model,
-                "persist_path": str(persist_path),
+                "persist_path": _to_portable_path(persist_path, settings.paths.project_dir),
                 "collection_name": collection_name,
                 "documents": documents,
             },
@@ -135,7 +151,7 @@ class LocalEmbeddingIndex:
             settings=settings,
             collection_name=payload["collection_name"],
             documents=payload["documents"],
-            persist_path=Path(payload["persist_path"]),
+            persist_path=_resolve_persist_path(payload["persist_path"], settings),
         )
 
     def search(self, query: str, top_k: int | None = None) -> list[SearchResult]:
