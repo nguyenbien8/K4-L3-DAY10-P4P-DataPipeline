@@ -32,7 +32,7 @@ def _clean_html(text: str) -> str:
     """Helper method: Xóa các thẻ HTML/XML (VD: <jats:p>)."""
     if not text:
         return ""
-    return re.sub(r'<[^>]+>', '', text).strip()
+    return re.sub(r"\s+", " ", re.sub(r'<[^>]+>', ' ', text)).strip()
 
 
 def _parse_crossref_date(date_obj: dict | None) -> str:
@@ -40,8 +40,20 @@ def _parse_crossref_date(date_obj: dict | None) -> str:
     if not date_obj or "date-parts" not in date_obj:
         return ""
     parts = date_obj["date-parts"][0]
-    # Format thành YYYY-MM-DD
-    return "-".join(f"{p:02d}" for p in parts)
+    if not parts or parts[0] is None:
+        return ""
+    # Format thành YYYY-MM-DD; thiếu tháng/ngày thì điền 01
+    year, month, day = (list(parts) + [1, 1])[:3]
+    return f"{int(year):04d}-{int(month or 1):02d}-{int(day or 1):02d}"
+
+
+def _first_date(item: dict, fields: tuple[str, ...]) -> str:
+    """Lấy ngày hợp lệ đầu tiên theo thứ tự ưu tiên các trường ngày của Crossref."""
+    for field in fields:
+        value = _parse_crossref_date(item.get(field))
+        if value:
+            return value
+    return ""
 
 
 def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
@@ -73,8 +85,10 @@ def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
         primary_category = categories[0] if categories else ""
         
         # Xử lý Dates
-        published = _parse_crossref_date(item.get("published-print") or item.get("created"))
-        updated = _parse_crossref_date(item.get("deposited") or item.get("indexed"))
+        published = _first_date(item, ("published", "published-print", "published-online", "issued", "created"))
+        updated = _first_date(item, ("deposited", "indexed", "created")) or published
+        if not published:
+            continue
         
         # Xử lý URLs
         abs_url = item.get("URL", "")
@@ -103,8 +117,36 @@ def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
     return records
 
 
+def _save_records(settings: Settings, records: list[PaperRecord]) -> None:
+    raw_records_path = Path(settings.paths.raw_records_json)
+    raw_records_path.parent.mkdir(parents=True, exist_ok=True)
+    # Biến đổi list dataclass thành list dict trước khi lưu
+    with open(raw_records_path, "w", encoding="utf-8") as f:
+        json.dump([asdict(record) for record in records], f, ensure_ascii=False, indent=2)
+
+
+def _load_offline_snapshot(settings: Settings) -> list[PaperRecord]:
+    """Chế độ Offline: đọc snapshot raw đã lưu (data/raw/crossref_response.json)."""
+    raw_api_path = Path(settings.paths.raw_api_response)
+    if not raw_api_path.exists():
+        raise FileNotFoundError(f"Không tìm thấy snapshot offline tại: {raw_api_path}")
+    with open(raw_api_path, "r", encoding="utf-8") as f:
+        payload = json.load(f)
+    print(f"Offline mode: loaded snapshot {raw_api_path.name}")
+    records = parse_crossref_payload(payload)
+    _save_records(settings, records)
+    return records
+
+
 def fetch_source_records(settings: Settings) -> list[PaperRecord]:
-    """Gọi source API, lưu raw response, parse thành records."""
+    """Gọi source API, lưu raw response, parse thành records.
+
+    Dual-Mode: mặc định đọc snapshot offline; chỉ gọi API khi REFRESH_SOURCE=1.
+    Nếu API lỗi (429/5xx sau khi retry, mất mạng) thì tự động quay về snapshot offline.
+    """
+    if not settings.refresh_source:
+        return _load_offline_snapshot(settings)
+
     
     # 1. Tạo session với cơ chế Retry cho các mã lỗi 429, 500, 502, 503, 504
     session = requests.Session()
@@ -130,9 +172,13 @@ def fetch_source_records(settings: Settings) -> list[PaperRecord]:
 
     # 2. Gọi API
     print(f"Fetching data from Crossref API...")
-    response = session.get(settings.source_api, params=params, headers=headers, timeout=15)
-    response.raise_for_status()
-    payload = response.json()
+    try:
+        response = session.get(settings.source_api, params=params, headers=headers, timeout=15)
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException as exc:
+        print(f"Crossref API unavailable ({exc}). Falling back to offline snapshot.")
+        return _load_offline_snapshot(settings)
 
     # 3. Lưu raw response vào settings.paths.raw_api_response
     raw_api_path = Path(settings.paths.raw_api_response)
@@ -144,14 +190,7 @@ def fetch_source_records(settings: Settings) -> list[PaperRecord]:
     records = parse_crossref_payload(payload)
 
     # 5. Lưu records vào settings.paths.raw_records_json
-    raw_records_path = Path(settings.paths.raw_records_json)
-    raw_records_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Biến đổi list dataclass thành list dict trước khi lưu
-    records_dict = [asdict(record) for record in records]
-    with open(raw_records_path, "w", encoding="utf-8") as f:
-        json.dump(records_dict, f, ensure_ascii=False, indent=2)
-
+    _save_records(settings, records)
     return records
 
 

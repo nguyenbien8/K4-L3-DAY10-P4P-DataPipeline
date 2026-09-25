@@ -1,92 +1,92 @@
 [
   {
-    "id": "q-01",
+    "id": "eval_001",
     "question_type": "summary",
-    "question": "What is the summary of 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'?",
-    "ground_truth": "Abstract Diagnosing jawbone lesions in oral and maxillofacial radiology remains challenging due to overlapping radiological features and the need for integrated clinical reasoning. This study aimed to develop and validate JADE-Plus, a novel multimodal, agent-controlled retrieval-augmented generation (RAG) framework for diagnostic decision support in jawbone lesion assessment. JADE-Plus was implemented as a cloud-based, tablet-optimized system integrating a vision-language model (VLM) for panoramic radiograph analysis, a knowledge-grounded RAG module, and an agentic verification loop for diagnostic fusion and re-ranking. The system was evaluated using 40 representative jawbone lesion cases and compared with JADE, GPT-5.4, GPT-5.4 VLM, and ORAD. Performance was assessed using Top-1 and Top-3 accuracy, ablation and statistical analyses, intra-model stability, and response time. JADE-Plus achieved the highest diagnostic performance, with a Top-1 accuracy of 90% (36/40; 95% CI 76\u201397%) and a Top-3 accuracy of 100%, with no missed diagnoses. Cochran\u2019s Q test demonstrated significant differences among models for both Top-3 correctness ( Q = 25.66, p &lt; 0.001) and Top-1 correctness ( Q = 27.55, p &lt; 0.001). Post-hoc McNemar tests with the Benjamini\u2013Hochberg correction showed that JADE-Plus significantly outperformed other models, particularly under the stricter Top-1 evaluation. Ablation analysis showed that the agentic verification stage improved Top-1 and Top-3 accuracy by 15 and 8 percentage points, respectively. JADE-Plus achieved the highest reproducibility (mean Jaccard similarity 0.97 \u00b1 0.12) while maintaining a mean response time of 33 \u00b1 1.5 s per case. JADE-Plus demonstrated superior diagnostic accuracy, stability, and reproducibility compared with baseline systems, supporting multimodal agentic RAG frameworks for jawbone lesion diagnosis.",
+    "question": "What is the summary of the paper 'Continuous Benchmark Evaluation for Enterprise Retrieval Pipelines'?",
+    "ground_truth": "Static benchmarks fail to capture domain drift in enterprise knowledge bases.",
     "ground_truth_doc_ids": [
-      "10.1007/s10278-026-02086-9"
+      "10.1145/3637528.3671812"
     ]
   },
   {
-    "id": "q-02",
+    "id": "eval_002",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'Multi-Agent Consensus for High-Stakes Fact Verification'?",
+    "ground_truth": "A single LLM is susceptible to confirmation bias when evaluating retrieved evidence.",
+    "ground_truth_doc_ids": [
+      "10.1145/3637528.3671808"
+    ]
+  },
+  {
+    "id": "eval_003",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'Freshness SLAs for Real-Time LLM Knowledge Augmentation'?",
+    "ground_truth": "We define freshness service-level agreements (SLAs) for temporal document ingestion.",
+    "ground_truth_doc_ids": [
+      "10.1145/3637528.3671804"
+    ]
+  },
+  {
+    "id": "eval_004",
     "question_type": "authors",
-    "question": "Who authored '0346 Retrieval Augmented Generation Improves Large Language Model Performance in Sleep Medicine'?",
-    "ground_truth": "Joseph Cheung, Pengze Li, Anshum Patel, SaiKrishna Vallamchetla, Het Contractor, Hayden Heninger, Cui Tao",
+    "question": "Who authored the paper 'Synthetic Corruption Testing: Stress-Testing Vector Search Robustness'?",
+    "ground_truth": "Kien Duong, Vy Ly",
     "ground_truth_doc_ids": [
-      "10.1093/sleep/zsag091.0346"
+      "10.1145/3637528.3671807"
     ]
   },
   {
-    "id": "q-03",
+    "id": "eval_005",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Data Observability and Quality Gates for Production RAG Systems'?",
+    "ground_truth": "Anh Tran, Quoc Pham",
+    "ground_truth_doc_ids": [
+      "10.1145/3637528.3671802"
+    ]
+  },
+  {
+    "id": "eval_006",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Advanced Perspectives on Continuous Benchmark Evaluation for Enterprise Retrieval Pipelines'?",
+    "ground_truth": "Quang Le, Yen Vu",
+    "ground_truth_doc_ids": [
+      "10.1145/3637528.3671824"
+    ]
+  },
+  {
+    "id": "eval_007",
     "question_type": "date",
-    "question": "When was 'Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation' published?",
-    "ground_truth": "2026-04-07",
+    "question": "When was the paper 'Advanced Perspectives on Hybrid Search Architectures: Combining BM25 with Dense Representations' published?",
+    "ground_truth": "2026-06-11",
     "ground_truth_doc_ids": [
-      "10.20944/preprints202604.0339.v1"
+      "10.1145/3637528.3671823"
     ]
   },
   {
-    "id": "q-04",
-    "question_type": "categories",
-    "question": "What categories describe 'An Agentic Retrieval-Augmented Vision-Language Recommendation System for Hyperdimensional Encoding Optimization'?",
-    "ground_truth": "",
-    "ground_truth_doc_ids": [
-      "10.20944/preprints202608.1849.v1"
-    ]
-  },
-  {
-    "id": "q-05",
-    "question_type": "summary",
-    "question": "What is the summary of 'Microsoft Azure artificial intelligence / machine learning hackathon for development of retrieval-augmented generation large language model'?",
-    "ground_truth": "The US Army Corps of Engineers (USACE) Civil Works (CW) research and development (R&amp;D) mission is to address challenging environmental sustainability problems through innovative science and engineering, which helps to ensure a safer, more prosperous, and more resilient nation. To achieve this, the US Army Engineer Research and Development Center (ERDC) plans, executes, leads, and directs many R&amp;D programs in coordination with USACE Headquarters, Districts, and Divisions through its multiple strategic focus areas, which include infrastructure, water modeling, crisis preparedness, ecosystem, sediment management, data, artificial intelligence, and robotics. In this process, much information is generated, including internal progress reviews, financial reports, scopes of work, work package planning, and success stories.",
-    "ground_truth_doc_ids": [
-      "10.21079/11681/50309"
-    ]
-  },
-  {
-    "id": "q-06",
-    "question_type": "authors",
-    "question": "Who authored 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'?",
-    "ground_truth": "Qianwen Cao, Chiyu Zhang, Junxiong Ning, Gongru Li",
-    "ground_truth_doc_ids": [
-      "10.2118/234689-pa"
-    ]
-  },
-  {
-    "id": "q-07",
+    "id": "eval_008",
     "question_type": "date",
-    "question": "When was 'Retrieval-Augmented Generation (RAG), Generative AI, and Agentic AI Governance: An Integrated Enterprise Governance Prioritization Architecture' published?",
-    "ground_truth": "2026-06-15",
+    "question": "When was the paper 'Advanced Perspectives on Automated Data Quality Profiling with Great Expectations in CI/CD' published?",
+    "ground_truth": "2026-06-10",
     "ground_truth_doc_ids": [
-      "10.21203/rs.3.rs-10012178/v1"
+      "10.1145/3637528.3671822"
     ]
   },
   {
-    "id": "q-08",
+    "id": "eval_009",
     "question_type": "categories",
-    "question": "What categories describe 'Retrieval-Augmented Large-Language-Model-Based Time-Series Forecasting for Cross-Market Equity Analysis'?",
-    "ground_truth": "",
+    "question": "What categories does the paper 'Advanced Perspectives on Chunking Strategies for Technical Documentation Retrieval' belong to?",
+    "ground_truth": "Information Retrieval, Natural Language Processing",
     "ground_truth_doc_ids": [
-      "10.21203/rs.3.rs-10178277/v1"
+      "10.1145/3637528.3671821"
     ]
   },
   {
-    "id": "q-09",
-    "question_type": "summary",
-    "question": "What is the summary of 'Agentic Retrieval-Augmented Generation for Verifiable Regulatory Compliance in Urban Cyber-Physical Systems'?",
-    "ground_truth": "Abstract Urban Cyber-Physical Systems (UCPS) support sustainable cities through the integration of Internet of Things (IoT), Artificial Intelligence (AI), and digi-tal infrastructures for environmental monitoring, urban planning, and resilient public services. However, ensuring regulatory compliance is increasingly chal-lenging because environmental, cybersecurity, municipal planning, and AI gov-ernance regulations evolve continuously across jurisdictions. Existing Retrieval-Augmented Generation (RAG) approaches improve evidence retrieval but remain vulnerable to hallucinations, regulatory supersession errors, and jurisdictional inconsistencies due to the absence of deterministic regulatory verification. This paper proposes a Verification-First Agentic Retrieval-Augmented Generation framework for trustworthy regulatory compliance reasoning in UCPS. The framework incorporates a Retrieval Agent, a deterministic Critic Agent, and a Formatting Agent to validate temporal validity, regulatory supersession, juris-dictional applicability, and compliance scope before language-model generation. A curated regulatory corpus and a benchmark comprising 78 regulatory com-pliance probes were used for evaluation against BM25, Dense RAG, Self-RAG, and Corrective RAG (CRAG). The proposed framework achieved a superses-sion detection rate of 0.88, perfect standalone Critic Agent validation (Precision = Recall = F1-score = 1.00), improved retrieval ranking quality (nDCG@5 = 0.75), and competitive computational efficiency. These results demonstrate that deterministic verification significantly improves the reliability, transparency, and trustworthiness of regulatory reasoning for sustainable urban governance.",
+    "id": "eval_010",
+    "question_type": "categories",
+    "question": "What categories does the paper 'Automated Data Quality Profiling with Great Expectations in CI/CD' belong to?",
+    "ground_truth": "Data Quality, DevOps",
     "ground_truth_doc_ids": [
-      "10.21203/rs.3.rs-10349437/v1"
-    ]
-  },
-  {
-    "id": "q-10",
-    "question_type": "authors",
-    "question": "Who authored 'Evidence Constrained Agentic Retrieval Augmented Generation for Substation Civil Engineering Preliminary Design Documents in a Single Project Study'?",
-    "ground_truth": "Yizhang Huang, Xinhui Zhang",
-    "ground_truth_doc_ids": [
-      "10.21203/rs.3.rs-10423755/v1"
+      "10.1145/3637528.3671810"
     ]
   }
 ]
